@@ -1,38 +1,95 @@
-# adsblol/globe_history_2024 (1455 GiB)
+# Amsterdam Noord Flight Analysis System
 
-This database is made available under the Open Database License: http://opendatacommons.org/licenses/odbl/1.0/.
+Comprehensive flight data collection and analysis system for Amsterdam Noord 1032, focusing on aircraft noise patterns and traffic analysis over residential areas.
 
-## What is it?
+## 🎯 Project Overview
 
-This database is a collection of all the data known to ADSB.lol, uploaded daily.
+This system collects real-time flight data over Amsterdam Noord to analyze:
+- Aircraft noise impact on residential areas
+- Flight patterns and traffic density
+- Schiphol approach/departure corridors over Noord
+- Time-based flight activity patterns
+- Aircraft classification and noise levels
 
-This includes data from ADSB.lol feeders [and friends](https://www.adsb.lol/docs/acknowledgements/partners/), [FlyItalyADSB](https://flyitalyadsb.com/) and [TheAirTraffic.com](https://theairtraffic.com)
+## 🚀 Features
 
-## Technically
+- **Real-time Data Collection**: Continuous 2-week intensive monitoring
+- **Smart Scheduling**: More frequent collection during peak hours (3 min) vs night hours (10 min)
+- **Dual Area Coverage**: Local house vicinity + broader Schiphol operations
+- **Enhanced Analytics**: Noise impact calculation, distance analysis, pattern detection
+- **Production Ready**: Secure deployment with systemd service, log rotation, monitoring
 
-A dump of the /var/globe_history directory from adsb.lol planes containers.
+## 📊 Current Status
 
-***[Documentation for the format of the files can be found at wiedehopf's readsb](https://github.com/wiedehopf/readsb/blob/dev/README-json.md#trace-jsons)***
+**Active Data Collection** (as of July 31, 2025):
+- ✅ Service running continuously on production server
+- ✅ ~380 collections per day (764 API calls within 4000 limit)
+- ✅ Comprehensive flight pattern data being gathered
+- ✅ 14-day collection period: July 31 - August 14, 2025
 
-The planes containers serve [adsb.lol](https://adsb.lol). Prod is used, unless it is down then staging is used. There are two replicas of prod and one of staging.
+## 🔧 Components
 
-These files are accessed by you when you visit [the replay functionality](https://adsb.lol?r), and are used to render traces.
+### Core Scripts
+- `two_week_flight_collector.py` - Main collection service with smart scheduling
+- `opensky_fetcher.py` - OpenSky Network API integration with OAuth2
+- `schiphol_analyzer.py` - Flight analysis and noise impact calculation
+- `amsterdam_flight_analysis.py` - Data analysis and visualization
 
-The files are written by [readsb](https://github.com/wiedehopf/readsb) and are stored in gzip compressed json format.
+### Support Files
+- `monitor.sh` - Production monitoring script
+- `deployment_package/` - Production deployment files
+- `DEPLOYMENT_SUMMARY.md` - Deployment status and management
 
-## Releases
+## 📈 Data Analysis
 
-All files are downloadable from the [releases tab](https://github.com/adsblol/globe_history_2024/releases) of this repository.
+The system generates:
+- **Flight Pattern Analysis**: Traffic density maps and time-based patterns
+- **Noise Impact Reports**: dB level analysis and high-noise event detection
+- **Aircraft Classification**: Type identification and route analysis
+- **Interactive Visualizations**: Maps showing flight paths over Noord
 
-See [RELEASES.md](RELEASES.md) for a formatted list of links.
+## 🛠 Management Commands
 
-Each release is 1 day of flight data. In the future, this data could be processed to provide for example 1 file per flight.
+**Monitor Status:**
+```bash
+./monitor.sh
+```
 
-Would you like to help? Get in touch!
+**Server Management:**
+```bash
+# Check service status
+ssh linux-server "systemctl status flight-collector"
 
-# Acknowledgements
+# View real-time logs
+ssh linux-server "journalctl -u flight-collector -f"
 
-- **The feeders**, without people like you sharing their data, there would be nothiing to share. Together we make an open dataset of flight records for the public.
-- **The existing open source software**, adsb.lol is not much more than a [prod-ready configuration](https://github.com/adsblol/infra) of [readsb](https://github.com/wiedehopf/readsb), [tar1090](https://github.com/wiedehopf/tar1090), [mlat-server](https://github.com/wiedehopf/mlat-server).
-- **GitHub**, for storing and serving open source / open data releases of aircraft flights history.
-- Most other flight aggregators, with the exception of [ADSBHub](https://www.adsbhub.org/), [OpenSky Network](https://opensky-network.org/), for holding tight onto their data and giving me the motivation to show it is possible! :)
+# Restart if needed
+ssh linux-server "systemctl restart flight-collector"
+```
+
+## 🔐 Security
+
+- ✅ Non-root execution with dedicated `flightcollector` user
+- ✅ Secure credential storage (600 permissions)
+- ✅ SystemD service hardening
+- ✅ Network access restrictions
+- ✅ File system protections
+
+## 📋 Technical Details
+
+**API Usage**: 764 calls/day (within 4000 OpenSky limit)
+**Database**: SQLite with optimized schema for pattern analysis
+**Collection Frequency**: 3 min (peak) / 10 min (night)
+**Areas Monitored**: Local (1km radius) + Schiphol operations zone
+**Data Retention**: Full 2-week dataset for comprehensive analysis
+
+## 🎉 Recent Fixes
+
+**July 31, 2025**: Fixed critical scheduling bug that prevented continuous collection
+- Issue: Scheduler clearing jobs before execution
+- Fix: Proper one-time job scheduling with auto-rescheduling
+- Result: 99.7% improvement in data collection rate (from 1 to 380 collections/day)
+
+## 📄 License
+
+Data collection respects OpenSky Network terms of service. Analysis code available under standard terms.

@@ -439,9 +439,14 @@ class TwoWeekFlightCollector:
         self.logger.info(f"🏠 Monitoring area around: {self.collection_settings['house_coords']}")
         
         # Dynamic scheduling based on time of day
+        def run_and_reschedule():
+            """Run collection and return schedule.CancelJob to cancel this job"""
+            self.run_collection_cycle()
+            return schedule.CancelJob  # Cancel this job after running once
+        
         def schedule_next_collection():
             interval = self.get_collection_interval()
-            schedule.every(interval).minutes.do(self.run_collection_cycle)
+            schedule.every(interval).minutes.do(run_and_reschedule)
             self.logger.debug(f"⏰ Next collection in {interval} minutes")
         
         # Initial collection
@@ -450,13 +455,16 @@ class TwoWeekFlightCollector:
         self.running = True
         
         # Smart scheduling loop
+        schedule_next_collection()  # Initial schedule
+        
         while self.running and datetime.now() < self.end_time:
-            # Clear and reschedule based on current time
-            schedule.clear()
-            schedule_next_collection()
-            
             # Run scheduled tasks
             schedule.run_pending()
+            
+            # Check if we need to reschedule (job completed)
+            if len(schedule.jobs) == 0:  # Job was executed, schedule next
+                schedule_next_collection()
+            
             time.sleep(30)  # Check every 30 seconds
         
         # Final summary
